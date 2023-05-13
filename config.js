@@ -1,17 +1,10 @@
-const dotenv = require('dotenv');
+import {promisify} from "util";
+import {readFile} from "fs";
 
 
-dotenv.config();
-
-// async function  readRefreshTokenFile(){
-//     const currentConfig =  await promisify(readFile)('readFile.env')
-//     return currentConfig.toString()
-// }
-//
-// let oldToken = await readRefreshTokenFile();
-
-module.exports = {
-    // OLD_TOKEN: oldToken,
-    TEST: 'test',
+async function  readRefreshTokenFile(){
+    const currentConfig =  await promisify(readFile)('readFile.env')
+    return currentConfig.toString()
 }
 
+export let refreshToken = await readRefreshTokenFile();

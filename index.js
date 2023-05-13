@@ -1,17 +1,36 @@
 import {RingApi} from 'ring-client-api'
-import {settings} from "./settings.js";
+import {refreshToken} from './config.js'
+import {readFile,writeFile} from "fs";
+import {promisify} from "util";
+
+
+
 
 const ringApi = new RingApi({
-    refreshToken:
-        settings.refreshToken,
-
-    // The following are all optional. See below for details
+    refreshToken: refreshToken,
     cameraStatusPollingSeconds: 20,
-    locationIds: [
-        '488e4800-fcde-4493-969b-d1a06f683102',
-        '4bbed7a7-06df-4f18-b3af-291c89854d60',
-    ],
 })
 
+ringApi.onRefreshTokenUpdated.subscribe(
+    async ({ newRefreshToken, oldRefreshToken }) => {
+        console.log('Refresh Token Updated: ', newRefreshToken)
+        if (!oldRefreshToken) {
+            return
+        }
 
-console.log(ringApi)
+        const currentConfig = await promisify(readFile)('readFile.env'),
+            updatedConfig = currentConfig
+                .toString()
+                .replace(oldRefreshToken, newRefreshToken)
+
+        await promisify(writeFile)('readFile.env', updatedConfig)
+    }
+)
+
+
+const locations = await ringApi.getLocations()
+const myCamera = locations[0].cameras[0]
+myCamera.getSnapshot()
+
+
+
